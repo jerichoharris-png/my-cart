@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body {
+    margin: 0;
+    padding: 10px;
+    font-family: 'Roboto', sans-serif;
+    color: #3c4043;
+  }
+
+  /* Google Style Action Button */
+  .add-btn {
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(60,64,67,0.3);
+    transition: background-color 0.2s;
+    margin-bottom: 20px;
+  }
+  .add-btn:hover {
+    background-color: #1557b0;
+  }
+
+  /* Clear Cart Link */
+  .clear-link {
+    font-size: 13px;
+    color: #d93025;
+    text-decoration: none;
+    margin-left: 15px;
+    cursor: pointer;
+  }
+  .clear-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Cart Data Table Design */
+  .cart-table {
+    width: 100%;
+    max-width: 400px;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .cart-table th {
+    background-color: #f1f3f4;
+    color: #202124;
+    text-align: left;
+    padding: 10px 16px;
+    font-weight: 500;
+    border-bottom: 2px solid #dadce0;
+  }
+  .cart-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #dadce0;
+    background-color: #ffffff;
+  }
+  .cart-table tr:last-child td {
+    border-bottom: none;
+  }
+  .empty-msg {
+    color: #5f6368;
+    font-style: italic;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<!-- User Controls -->
+<button class="add-btn" id="addBtn">Add Onion to Cart</button>
+<a class="clear-link" id="clearBtn">Clear Cart</a>
+
+<!-- The Cart View Table -->
+<table class="cart-table" id="cartTable" style="display: none;">
+  <thead>
+    <tr>
+      <th>Item Name</th>
+      <th>Quantity</th>
+    </tr>
+  </thead>
+  <tbody id="cartBody">
+    <!-- Items will dynamically appear here via JS -->
+  </tbody>
+</table>
+
+<p class="empty-msg" id="emptyMsg">Your cart is currently empty.</p>
+
+<script>
+  // --- LOCALSTORAGE MECHANICS ---
+  
+  // Safely extract the existing cart array from local storage
+  function getCartItems() {
+    var storedCart = localStorage.getItem("cart");
+    if (storedCart) {
+      try {
+        return JSON.parse(storedCart);
+      } catch(e) {
+        return [];
+      }
+    }
+    return [];
+  }
+
+  // Render current array into the visible HTML table template
+  function updateCartUI() {
+    var cartItems = getCartItems();
+    var table = document.getElementById("cartTable");
+    var tbody = document.getElementById("cartBody");
+    var emptyMsg = document.getElementById("emptyMsg");
+    
+    tbody.innerHTML = ""; // Clear existing table rows
+
+    if (cartItems.length === 0) {
+      table.style.display = "none";
+      emptyMsg.style.display = "block";
+    } else {
+      table.style.display = "table";
+      emptyMsg.style.display = "none";
+
+      cartItems.forEach(function(item) {
+        var row = document.createElement("tr");
+        
+        var nameCell = document.createElement("td");
+        nameCell.textContent = item.name;
+        row.appendChild(nameCell);
+        
+        var qtyCell = document.createElement("td");
+        qtyCell.textContent = item.quantity;
+        row.appendChild(qtyCell);
+        
+        tbody.appendChild(row);
+      });
+    }
+  }
+
+  // Add Item Click Event Handler
+  document.getElementById("addBtn").onclick = function() {
+    var cartItems = getCartItems();
+    
+    // Check if Onion is already in the list to increment quantity, otherwise add a new item object
+    var existingItem = cartItems.find(item => item.name === "Onion");
+    if (existingItem) {
+      existingItem.quantity += 1;
+    } else {
+      cartItems.push({ name: "Onion", quantity: 1 });
+    }
+    
+    // Save updated state string back to localStorage
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+    updateCartUI();
+  };
+
+  // Clear Event Handler
+  document.getElementById("clearBtn").onclick = function() {
+    localStorage.removeItem("cart"); // Removes the key entirely
+    updateCartUI();
+  };
+
+  // Initial draw execution when block initializes
+  updateCartUI();
+</script>
+
+</body>
+</html>
